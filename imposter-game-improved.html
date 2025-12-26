@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Imposter Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B35;
+            --secondary: #F7931E;
+            --accent: #FDC830;
+            --dark: #1a1a2e;
+            --darker: #0f0f1e;
+            --light: #fff;
+            --imposter: #E63946;
+            --safe: #06FFA5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(253, 200, 48, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Fredoka', sans-serif;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-item {
+            position: relative;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-item label {
+            display: block;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .checkbox-item input[type="checkbox"]:checked + label {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .player-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--light);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 107, 53, 0.6);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .reveal-card {
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--accent);
+        }
+
+        .word-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .word-display.normal {
+            background: linear-gradient(135deg, rgba(6, 255, 165, 0.2), rgba(6, 255, 165, 0.1));
+            color: var(--safe);
+            border: 3px solid var(--safe);
+            text-shadow: 0 0 20px rgba(6, 255, 165, 0.5);
+        }
+
+        .word-display.imposter {
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.2), rgba(230, 57, 70, 0.1));
+            color: var(--imposter);
+            border: 3px solid var(--imposter);
+            text-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes revealPop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .word-display.animate {
+            animation: revealPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .hidden {
+            filter: blur(20px);
+            user-select: none;
+            pointer-events: none;
+        }
+
+        .results-card {
+            text-align: center;
+        }
+
+        .results-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .imposters-list {
+            background: rgba(230, 57, 70, 0.1);
+            border: 2px solid var(--imposter);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .imposters-list h3 {
+            color: var(--imposter);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .imposters-list ul {
+            list-style: none;
+            font-size: 1.3rem;
+        }
+
+        .imposters-list li {
+            padding: 10px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .word-reveal {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--safe);
+            margin: 20px 0;
+        }
+
+        .instruction {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .select-all-categories {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .select-all-categories:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .select-all-categories input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .select-all-categories label {
+            display: inline;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--imposter), #C41E3A);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            max-width: 400px;
+            animation: alertPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .custom-alert button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: white;
+            color: var(--imposter);
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+
+        @keyframes alertPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .custom-word-entry {
+            background: rgba(6, 255, 165, 0.1);
+            border: 2px solid rgba(6, 255, 165, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .custom-word-entry h4 {
+            color: var(--safe);
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .custom-word-entry .word-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .remove-contributor-btn {
+            background: rgba(230, 57, 70, 0.2);
+            color: var(--imposter);
+            border: 2px solid var(--imposter);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .remove-contributor-btn:hover {
+            background: rgba(230, 57, 70, 0.3);
+        }
+
+        .add-contributor-btn {
+            background: rgba(6, 255, 165, 0.1);
+            color: var(--safe);
+            border: 2px solid var(--safe);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .add-contributor-btn:hover {
+            background: rgba(6, 255, 165, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 25px 18px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                margin-bottom: 8px;
+            }
+
+            .subtitle {
+                font-size: 0.8rem;
+                margin-bottom: 25px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+            }
+
+            .word-display {
+                font-size: 2rem;
+                padding: 25px 15px;
+                letter-spacing: 2px;
+            }
+
+            .player-name {
+                font-size: 1.3rem;
+            }
+
+            input[type="text"],
+            input[type="number"],
+            select,
+            textarea {
+                font-size: 16px;
+                padding: 12px 14px;
+            }
+
+            label {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+
+            .checkbox-group {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .checkbox-item label {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+
+            .btn {
+                padding: 15px 24px;
+                font-size: 1rem;
+            }
+
+            .custom-alert {
+                max-width: 85%;
+                padding: 25px 30px;
+                font-size: 1rem;
+            }
+
+            .results-title {
+                font-size: 2rem;
+            }
+
+            .imposters-list {
+                padding: 20px;
+            }
+
+            .imposters-list h3 {
+                font-size: 1.3rem;
+            }
+
+            .imposters-list ul {
+                font-size: 1.1rem;
+            }
+
+            #customWordModal > div,
+            #forgotWordModal > div {
+                padding: 30px 25px;
+                max-width: 90%;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .btn {
+                padding: 16px 28px;
+                min-height: 48px;
+            }
+            
+            .checkbox-item label {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        /* Prevent iOS Safari zoom on input focus */
+        @supports (-webkit-touch-callout: none) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="setupScreen" class="screen active">
+            <div class="card">
+                <h1>🕵️ IMPOSTER</h1>
+                <p class="subtitle">Who can you trust?</p>
+
+                <div style="background: rgba(253, 200, 48, 0.1); border: 2px solid rgba(253, 200, 48, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+                    <h3 style="color: var(--accent); margin-bottom: 10px; font-size: 1.1rem;">📋 How to Play</h3>
+                    <p style="font-size: 0.9rem; line-height: 1.6; color: rgba(255, 255, 255, 0.8);">
+                        Everyone gets the same word except the imposter(s). Players take turns describing the word WITHOUT saying it. 
+                        The imposters must blend in by making vague statements! After discussion, vote on who you think the imposter is. 
+                        If imposters are caught, honest players win. If imposters avoid detection or correctly guess the word, they win!
+                    </p>
+                </div>
+
+                <h2>Game Setup</h2>
+
+                <label>Select Categories:</label>
+                <div class="select-all-categories">
+                    <input type="checkbox" id="selectAllCategories" onchange="toggleAllCategories()">
+                    <label for="selectAllCategories">Select All</label>
+                </div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cat-general" value="general" checked>
+                        <label for="cat-general">General</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cat-food" value="food">
+                        <label for="cat-food">Food</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cat-animals" value="animals">
+                        <label for="cat-animals">Animals</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cat-objects" value="objects">
+                        <label for="cat-objects">Objects</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cat-places" value="places">
+                        <label for="cat-places">Places</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cat-activities" value="activities">
+                        <label for="cat-activities">Activities</label>
+                    </div>
+                </div>
+
+                <label for="numPlayers">Number of Players:</label>
+                <select id="numPlayers" aria-label="Number of Players">
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                    <option value="5" selected>5 Players</option>
+                    <option value="6">6 Players</option>
+                    <option value="7">7 Players</option>
+                    <option value="8">8 Players</option>
+                    <option value="9">9 Players</option>
+                    <option value="10">10 Players</option>
+                    <option value="11">11 Players</option>
+                    <option value="12">12 Players</option>
+                    <option value="13">13 Players</option>
+                    <option value="14">14 Players</option>
+                    <option value="15">15 Players</option>
+                    <option value="16">16 Players</option>
+                    <option value="17">17 Players</option>
+                    <option value="18">18 Players</option>
+                    <option value="19">19 Players</option>
+                    <option value="20">20 Players</option>
+                </select>
+
+                <label for="numImposters">Number of Imposters:</label>
+                <select id="numImposters" aria-label="Number of Imposters">
+                    <option value="1" selected>1 Imposter</option>
+                    <option value="2">2 Imposters</option>
+                    <option value="3">3 Imposters</option>
+                    <option value="4">4 Imposters</option>
+                    <option value="5">5 Imposters</option>
+                    <option value="6">6 Imposters</option>
+                    <option value="7">7 Imposters</option>
+                    <option value="8">8 Imposters</option>
+                    <option value="9">9 Imposters</option>
+                    <option value="10">10 Imposters</option>
+                </select>
+
+                <div style="margin: 25px 0;">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" id="useCustomWords" onchange="toggleCustomWords()" style="margin-right: 10px; width: auto;">
+                        <label for="useCustomWords" style="margin: 0; cursor: pointer;">Use Custom Words</label>
+                    </div>
+                    <div id="customWordsContainer" style="display: none;">
+                        <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-bottom: 15px; font-style: italic;">
+                            Players can privately add words! Pass the device around. Custom words mix with category words. You won't be an imposter when your word is chosen.
+                        </p>
+                        
+                        <div id="customWordEntries"></div>
+                        
+                        <button type="button" class="add-contributor-btn" onclick="showCustomWordModal()">+ Add Your Words</button>
+                    </div>
+                </div>
+
+                <!-- Custom Word Modal -->
+                <div id="customWordModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center;">
+                    <div style="background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%); border-radius: 24px; padding: 40px; max-width: 500px; width: 90%; border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);">
+                        <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 1.5rem;">Add Your Custom Words</h3>
+                        <p style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">
+                            Enter your words privately. Others won't see what you add!
+                        </p>
+                        
+                        <input type="text" id="modalWordOwner" placeholder="Your name" 
+                            style="width: 100%; padding: 14px; border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; 
+                            font-size: 1rem; font-family: 'Fredoka', sans-serif; background: rgba(255, 255, 255, 0.05); 
+                            color: var(--light); margin-bottom: 15px;">
+                        
+                        <textarea id="modalCustomWords" rows="6" placeholder="Add words (one per line)
+
+EXAMPLE
+VOLCANO
+SPACESHIP"
+                            style="width: 100%; padding: 14px; border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+                            font-size: 1rem; font-family: 'Fredoka', sans-serif; background: rgba(255, 255, 255, 0.05);
+                            color: var(--light); resize: vertical; margin-bottom: 20px;"></textarea>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-primary" onclick="saveCustomWords()" style="flex: 1;">Save Words</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeCustomWordModal()" style="flex: 1; margin-top: 0;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="playerNamesContainer"></div>
+
+                <div style="margin: 25px 0; padding: 15px; background: rgba(230, 57, 70, 0.1); border: 2px solid rgba(230, 57, 70, 0.3); border-radius: 12px;">
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="frenzyMode" style="margin-right: 10px; width: auto;">
+                        <label for="frenzyMode" style="margin: 0; cursor: pointer; font-weight: 600; color: var(--imposter);">🔥 Frenzy Mode</label>
+                    </div>
+                    <p style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); margin-top: 8px; font-style: italic;">
+                        Rare chaos rounds: everyone imposters, no imposters, or only one innocent!
+                    </p>
+                </div>
+
+                <button class="btn btn-primary" id="startGameBtn" onclick="startGame()">Start Game</button>
+            </div>
+        </div>
+
+        <div id="revealScreen" class="screen">
+            <div class="card reveal-card">
+                <div class="progress-indicator" id="progressText">Player 1 of 5</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 20%;"></div>
+                </div>
+                
+                <div class="player-name" id="currentPlayerName"></div>
+                
+                <button class="btn btn-primary" id="revealBtn" onclick="revealWord()">
+                    👁️ Tap to See Your Word
+                </button>
+
+                <div id="wordContainer" style="display: none;">
+                    <div class="word-display" id="wordDisplay"></div>
+                    <p class="instruction" id="revealInstruction">Memorize this and pass to the next player</p>
+                    <button class="btn btn-secondary" id="nextBtn" onclick="hideAndNext()">Hide & Next Player</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="readyScreen" class="screen">
+            <div class="card reveal-card">
+                <h1 style="font-size: 2.5rem; margin-bottom: 20px;">🎭 All Players Have Seen Their Words!</h1>
+
+                <div style="background: rgba(6, 255, 165, 0.1); border: 2px solid rgba(6, 255, 165, 0.3); border-radius: 16px; padding: 25px; margin: 25px 0;">
+                    <h3 style="color: var(--safe); margin-bottom: 10px; font-size: 1.3rem;">🎯 Starting Player</h3>
+                    <p id="startingPlayerName" style="font-size: 1.5rem; font-weight: 700; color: var(--safe);"></p>
+                    <p style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); margin-top: 8px;">This player begins the discussion</p>
+                </div>
+                
+                <div style="background: rgba(253, 200, 48, 0.1); border: 2px solid rgba(253, 200, 48, 0.3); border-radius: 16px; padding: 30px; margin: 30px 0;">
+                    <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.3rem;">💡 Game Tips</h3>
+                    <ul style="text-align: left; font-size: 1rem; line-height: 1.8; color: rgba(255, 255, 255, 0.9); list-style: none; padding: 0;">
+                        <li style="margin-bottom: 12px;">✨ Go around in a circle and describe the word without saying it</li>
+                        <li style="margin-bottom: 12px;">🤔 Imposters: listen carefully and try to blend in!</li>
+                        <li style="margin-bottom: 12px;">🗳️ After everyone speaks, vote on who the imposter is</li>
+                        <li style="margin-bottom: 12px;">🏆 If caught, imposters can guess the word for a comeback!</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-secondary" onclick="showForgotWordModal()" style="margin-bottom: 15px;">🤔 Forgot Your Word?</button>
+                <button class="btn btn-primary" onclick="showResults()">End Game & Reveal Imposters</button>
+            </div>
+        </div>
+
+        <!-- Forgot Word Modal -->
+        <div id="forgotWordModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center;">
+            <div style="background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%); border-radius: 24px; padding: 40px; max-width: 500px; width: 90%; border: 2px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);">
+                <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 1.5rem;">Who Are You?</h3>
+                <p style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">
+                    Select your name to see your word privately
+                </p>
+                
+                <div id="playerSelectList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                    <!-- Player buttons will be inserted here -->
+                </div>
+                
+                <div id="forgotWordDisplay" style="display: none;">
+                    <div class="word-display" id="forgotWordText" style="font-size: 2.5rem; padding: 30px; margin: 20px 0;"></div>
+                    <button type="button" class="btn btn-primary" onclick="closeForgotWordModal()">Got It!</button>
+                </div>
+                
+                <button type="button" class="btn btn-secondary" id="forgotWordCancelBtn" onclick="closeForgotWordModal()" style="margin-top: 0;">Cancel</button>
+            </div>
+        </div>
+
+        <div id="resultsScreen" class="screen">
+            <div class="card results-card">
+                <h1 class="results-title">Game Over!</h1>
+                
+                <div class="word-reveal">
+                    The word was: <strong id="gameWord"></strong>
+                </div>
+
+                <div class="imposters-list">
+                    <h3 id="impostersTitle">🎭 The Imposter Was:</h3>
+                    <ul id="impostersList"></ul>
+                </div>
+
+                <button class="btn btn-primary" onclick="nextRound()">Next Round</button>
+                <button class="btn btn-secondary" onclick="newGame()">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game configuration constants
+        const FRENZY_CHANCE = 0.1;
+        const MIN_WORD_LENGTH = 2;
+
+        // Word categories - expanded pools
+        const categories = {
+            general: ["ELEPHANT", "PIZZA", "GUITAR", "OCEAN", "CASTLE", "DRAGON", "LAPTOP", "RAINBOW", "COFFEE", "BICYCLE", "MOUNTAIN", "ROBOT", "PENCIL", "SUNSET", "CAMERA", "BALLOON", "SANDWICH", "FIREWORK", "GARDEN", "UMBRELLA", "TORNADO", "SPACESHIP", "VOLCANO", "WIZARD", "PIRATE", "NINJA", "DINOSAUR", "UNICORN", "TREASURE", "COMPASS", "TELESCOPE", "ROCKET", "PARACHUTE", "LIGHTHOUSE", "CARNIVAL", "CIRCUS", "MAGICIAN", "ATLANTIS", "PYRAMID", "SPHINX", "MIRROR", "CANDLE", "ANCHOR", "CROWN", "SWORD", "SHIELD", "THRONE", "CRYSTAL", "POTION", "SPELL", "GHOST", "VAMPIRE", "ZOMBIE", "ALIEN", "METEOR", "COMET", "GALAXY", "PLANET", "SATELLITE", "ASTRONAUT", "MUSEUM", "LIBRARY", "FOUNTAIN", "STATUE", "MONUMENT", "BRIDGE", "TOWER", "TEMPLE", "PALACE", "FORTRESS", "CAVE", "ISLAND", "VALLEY", "CLIFF", "DESERT", "JUNGLE", "TUNDRA", "SWAMP", "MEADOW", "PRAIRIE", "OASIS", "LAGOON", "WATERFALL", "GEYSER", "ICEBERG", "GLACIER", "AURORA", "ECLIPSE", "THUNDER", "LIGHTNING", "BLIZZARD", "HURRICANE", "EARTHQUAKE", "AVALANCHE", "TIDE", "WAVE", "CURRENT", "WHIRLPOOL"],
+            food: ["PIZZA", "BURGER", "SUSHI", "PASTA", "TACO", "CURRY", "WAFFLE", "DONUT", "RAMEN", "KEBAB", "CROISSANT", "SMOOTHIE", "PANCAKE", "BROWNIE", "CHEESECAKE", "BURRITO", "DUMPLING", "PRETZEL", "MUFFIN", "STEAK", "LASAGNA", "NACHOS", "GYROS", "FALAFEL", "SHAWARMA", "TIRAMISU", "BAKLAVA", "CREPE", "FONDUE", "PAELLA", "RISOTTO", "GNOCCHI", "CHURROS", "MACARON", "ECLAIR", "BAGUETTE", "BAGEL", "CRONUT", "QUICHE", "LOBSTER", "SHRIMP", "CRAB", "OYSTER", "SALMON", "TUNA", "SARDINE", "CAVIAR", "TRUFFLE", "AVOCADO", "MANGO", "PAPAYA", "KIWI", "COCONUT", "PINEAPPLE", "STRAWBERRY", "BLUEBERRY", "RASPBERRY", "BLACKBERRY", "CRANBERRY", "POMEGRANATE", "WATERMELON", "CANTALOUPE", "HONEYDEW", "PEACH", "PLUM", "APRICOT", "NECTARINE", "CHERRY", "GRAPE", "ORANGE", "LEMON", "LIME", "GRAPEFRUIT", "TANGERINE", "BANANA", "APPLE", "PEAR", "QUINOA", "COUSCOUS", "HUMMUS", "TZATZIKI", "GUACAMOLE", "SALSA", "PESTO", "BRUSCHETTA", "CAPPUCCINO", "ESPRESSO", "LATTE", "MOCHA", "FRAPPE", "MILKSHAKE", "SORBET", "GELATO", "FUDGE", "CARAMEL", "TOFFEE", "NOUGAT", "MARSHMALLOW", "CHOCOLATE"],
+            animals: ["ELEPHANT", "TIGER", "DOLPHIN", "EAGLE", "PANDA", "PENGUIN", "GIRAFFE", "KANGAROO", "OCTOPUS", "CHAMELEON", "FLAMINGO", "KOALA", "SLOTH", "PEACOCK", "HEDGEHOG", "BUTTERFLY", "RACCOON", "SEAHORSE", "PLATYPUS", "LEMUR", "CHEETAH", "LEOPARD", "LYNX", "OTTER", "WALRUS", "PELICAN", "TOUCAN", "PARROT", "HUMMINGBIRD", "OSTRICH", "ALPACA", "LLAMA", "BISON", "MOOSE", "ARMADILLO", "PORCUPINE", "ANTEATER", "MEERKAT", "MONGOOSE", "NARWHAL", "BELUGA", "MANATEE", "DUGONG", "SEAL", "SEA LION", "WHALE", "SHARK", "STINGRAY", "JELLYFISH", "STARFISH", "CORAL", "SQUID", "LOBSTER", "CRAB", "SHRIMP", "CLAM", "OYSTER", "SNAIL", "SLUG", "BEETLE", "LADYBUG", "DRAGONFLY", "FIREFLY", "GRASSHOPPER", "CRICKET", "MANTIS", "CATERPILLAR", "MOTH", "BEE", "WASP", "ANT", "TERMITE", "SPIDER", "SCORPION", "CENTIPEDE", "MILLIPEDE", "SALAMANDER", "NEWT", "FROG", "TOAD", "TURTLE", "TORTOISE", "IGUANA", "GECKO", "KOMODO", "CROCODILE", "ALLIGATOR", "COBRA", "PYTHON", "RATTLESNAKE", "ANACONDA", "VIPER", "CONDOR", "VULTURE", "HAWK", "FALCON", "OWL", "RAVEN", "CROW", "MAGPIE"],
+            objects: ["GUITAR", "LAPTOP", "CAMERA", "BICYCLE", "UMBRELLA", "BACKPACK", "TELESCOPE", "COMPASS", "PAINTBRUSH", "TROPHY", "MICROPHONE", "SPEAKER", "HEADPHONES", "KEYBOARD", "SKATEBOARD", "FLASHLIGHT", "WALLET", "SCISSORS", "HAMMER", "NOTEBOOK", "HARMONICA", "SAXOPHONE", "VIOLIN", "DRUMSTICKS", "TAMBOURINE", "BINOCULARS", "MAGNIFIER", "HOURGLASS", "STOPWATCH", "METRONOME", "BOOMERANG", "FRISBEE", "YO-YO", "SLINKY", "RUBIK'S CUBE", "KALEIDOSCOPE", "TYPEWRITER", "STAPLER", "PAPERCLIP", "ERASER", "PENCIL", "PEN", "MARKER", "CRAYON", "CHALK", "RULER", "PROTRACTOR", "CALCULATOR", "ABACUS", "THERMOMETER", "BAROMETER", "SEXTANT", "ASTROLABE", "SUNDIAL", "CLOCK", "WATCH", "TIMER", "BELL", "WHISTLE", "HORN", "TRUMPET", "FLUTE", "CLARINET", "OBOE", "BASSOON", "TUBA", "TROMBONE", "HARP", "LYRE", "BANJO", "MANDOLIN", "UKULELE", "ACCORDION", "BAGPIPES", "PIANO", "ORGAN", "SYNTHESIZER", "TURNTABLE", "AMPLIFIER", "MIXER", "EQUALIZER", "RADIO", "ANTENNA", "SATELLITE", "TELESCOPE", "MICROSCOPE", "PRISM", "LENS", "MIRROR", "LANTERN", "CANDLE", "TORCH", "LIGHTER", "MATCHSTICK", "ROPE", "CHAIN", "ANCHOR", "HOOK", "NAIL", "SCREW", "BOLT", "WRENCH", "PLIERS"],
+            places: ["OCEAN", "CASTLE", "MOUNTAIN", "BEACH", "FOREST", "DESERT", "WATERFALL", "VOLCANO", "CANYON", "ISLAND", "LIGHTHOUSE", "MUSEUM", "STADIUM", "AIRPORT", "CARNIVAL", "LIBRARY", "THEATER", "PLAYGROUND", "MARKET", "TEMPLE", "CATHEDRAL", "MONASTERY", "PYRAMID", "COLOSSEUM", "ACROPOLIS", "GREENHOUSE", "AQUARIUM", "OBSERVATORY", "PLANETARIUM", "ARCADE", "BOWLING ALLEY", "ICE RINK", "SKATEPARK", "TREEHOUSE", "WINDMILL", "VINEYARD", "ORCHARD", "MEADOW", "GLACIER", "GROTTO", "CAVERN", "DUNGEON", "CRYPT", "TOMB", "RUINS", "FORTRESS", "CITADEL", "PALACE", "MANSION", "COTTAGE", "CABIN", "CHALET", "BUNGALOW", "VILLA", "PENTHOUSE", "LOFT", "STUDIO", "WORKSHOP", "FACTORY", "WAREHOUSE", "HANGAR", "GARAGE", "BARN", "STABLE", "SILO", "MILL", "BAKERY", "CAFE", "RESTAURANT", "BISTRO", "DINER", "TAVERN", "PUB", "BAR", "NIGHTCLUB", "LOUNGE", "CASINO", "HOTEL", "MOTEL", "HOSTEL", "RESORT", "SPA", "SAUNA", "BATHHOUSE", "FOUNTAIN", "PLAZA", "SQUARE", "COURTYARD", "GARDEN", "PARK", "RESERVE", "SANCTUARY", "REFUGE", "HABITAT", "ECOSYSTEM", "BIOME", "RAINFOREST", "SAVANNA", "TUNDRA", "TAIGA", "STEPPE", "WETLAND", "MARSH", "BOG"],
+            activities: ["DANCING", "SWIMMING", "PAINTING", "COOKING", "HIKING", "READING", "SINGING", "SURFING", "CAMPING", "FISHING", "GARDENING", "CLIMBING", "SKATING", "KAYAKING", "MEDITATION", "PHOTOGRAPHY", "JUGGLING", "ARCHERY", "POTTERY", "STARGAZING", "SKYDIVING", "BUNGEE JUMPING", "PARAGLIDING", "SCUBA DIVING", "SNORKELING", "HORSEBACK RIDING", "CYCLING", "JOGGING", "YOGA", "PILATES", "KNITTING", "EMBROIDERY", "ORIGAMI", "SCULPTING", "WOODWORKING", "CALLIGRAPHY", "BEATBOXING", "BREAKDANCING", "PARKOUR", "ROCK CLIMBING", "FENCING", "BOXING", "WRESTLING", "KARATE", "JUDO", "TAEKWONDO", "KICKBOXING", "BALLET", "TAP DANCING", "SALSA", "TANGO", "WALTZ", "SWING", "HIP HOP", "JAZZ", "CONTEMPORARY", "BALLROOM", "FOLK DANCING", "SQUARE DANCING", "LINE DANCING", "CHEERLEADING", "GYMNASTICS", "ACROBATICS", "TRAPEZE", "TIGHTROPE", "UNICYCLING", "SKATEBOARDING", "ROLLERBLADING", "SNOWBOARDING", "SKIING", "ICE SKATING", "SLEDDING", "BOBSLEDDING", "CURLING", "HOCKEY", "SOCCER", "BASKETBALL", "VOLLEYBALL", "TENNIS", "BADMINTON", "SQUASH", "RACQUETBALL", "PING PONG", "GOLF", "BOWLING", "BILLIARDS", "DARTS", "FRISBEE", "BASEBALL", "SOFTBALL", "CRICKET", "RUGBY", "FOOTBALL", "LACROSSE", "POLO", "ROWING", "CANOEING", "RAFTING", "SAILING", "WINDSURFING"]
+        };
+
+        let gameState = {
+            players: [],
+            imposters: [],
+            word: "",
+            currentPlayerIndex: 0,
+            selectedCategories: [],
+            customWordContributors: [],  // Array of {name: string, words: string[]}
+            startingPlayer: null,
+            frenzyMode: null,
+            baseNumImposters: 1,
+            usedWords: []  // Track words that have been used
+        };
+
+        let customWordContributorCount = 0;
+        let availableContributorIds = []; // Stack of deleted IDs to reuse
+        let contributorData = {}; // Store contributor data by ID
+
+        // Utility functions
+        const GameUtils = {
+            shuffleArray(array) {
+                const arr = [...array];
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            },
+            
+            getRandomElement(array) {
+                return array[Math.floor(Math.random() * array.length)];
+            }
+        };
+
+        // Generate player name inputs
+        document.getElementById('numPlayers').addEventListener('change', function() {
+            const container = document.getElementById('playerNamesContainer');
+            const num = parseInt(this.value);
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= num; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Player ${i}`;
+                input.id = `player${i}`;
+                input.value = '';
+                container.appendChild(input);
+            }
+        });
+
+        // Initialize with default players
+        document.getElementById('numPlayers').dispatchEvent(new Event('change'));
+
+        function showAlert(message) {
+            // Close existing alert first
+            if (window.currentAlert) {
+                closeAlert();
+            }
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'alert-overlay';
+            overlay.onclick = closeAlert;
+            
+            const alertBox = document.createElement('div');
+            alertBox.className = 'custom-alert';
+            alertBox.innerHTML = `
+                <div>${message}</div>
+                <button onclick="closeAlert()">OK</button>
+            `;
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(alertBox);
+            
+            window.currentAlert = { overlay, alertBox };
+        }
+
+        function closeAlert() {
+            if (window.currentAlert) {
+                document.body.removeChild(window.currentAlert.overlay);
+                document.body.removeChild(window.currentAlert.alertBox);
+                window.currentAlert = null;
+            }
+        }
+
+        function toggleAllCategories() {
+            const selectAll = document.getElementById('selectAllCategories');
+            const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+        }
+
+        function toggleCustomWords() {
+            const checkbox = document.getElementById('useCustomWords');
+            const container = document.getElementById('customWordsContainer');
+            container.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function showCustomWordModal() {
+            document.getElementById('customWordModal').style.display = 'flex';
+            document.getElementById('modalWordOwner').value = '';
+            document.getElementById('modalCustomWords').value = '';
+            document.getElementById('modalWordOwner').focus();
+        }
+
+        function closeCustomWordModal() {
+            document.getElementById('customWordModal').style.display = 'none';
+        }
+
+        function saveCustomWords() {
+            const name = document.getElementById('modalWordOwner').value.trim();
+            const wordsText = document.getElementById('modalCustomWords').value.trim();
+            
+            if (!wordsText) {
+                showAlert('Please add at least one word!');
+                return;
+            }
+            
+            const words = wordsText
+                .split('\n')
+                .map(w => w.trim().toUpperCase())
+                .filter(w => w.length >= MIN_WORD_LENGTH);
+            
+            if (words.length === 0) {
+                showAlert('Please add at least one word with 2+ characters!');
+                return;
+            }
+            
+            // Get next ID (reuse deleted IDs or create new one)
+            let contributorId;
+            if (availableContributorIds.length > 0) {
+                contributorId = availableContributorIds.pop();
+            } else {
+                customWordContributorCount++;
+                contributorId = customWordContributorCount;
+            }
+            
+            // Store data
+            contributorData[contributorId] = {
+                name: name || null,
+                words: words
+            };
+            
+            // Add to display
+            addContributorToDisplay(contributorId, name, words.length);
+            
+            closeCustomWordModal();
+        }
+
+        function addContributorToDisplay(id, name, wordCount) {
+            const container = document.getElementById('customWordEntries');
+            
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'custom-word-entry';
+            entryDiv.id = `contributor-${id}`;
+            
+            const infoDiv = document.createElement('div');
+            const displayName = name || `Contributor ${id}`;
+            infoDiv.innerHTML = `
+                <h4>${displayName}</h4>
+                <div class="word-count">${wordCount} word${wordCount !== 1 ? 's' : ''} added</div>
+            `;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-contributor-btn';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = () => removeCustomWordContributor(id);
+            
+            entryDiv.appendChild(infoDiv);
+            entryDiv.appendChild(removeBtn);
+            container.appendChild(entryDiv);
+        }
+
+        function removeCustomWordContributor(id) {
+            const element = document.getElementById(`contributor-${id}`);
+            if (element) {
+                element.remove();
+                delete contributorData[id];
+                // Add ID back to available pool for reuse
+                availableContributorIds.push(id);
+                availableContributorIds.sort((a, b) => a - b); // Keep sorted for predictable reuse
+            }
+        }
+
+        function startGame() {
+            const startBtn = document.getElementById('startGameBtn');
+            startBtn.disabled = true;
+            const originalText = startBtn.textContent;
+            startBtn.textContent = 'Starting...';
+            
+            setTimeout(() => {
+                try {
+                    // Get selected categories
+                    const categoryCheckboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked');
+                    gameState.selectedCategories = Array.from(categoryCheckboxes).map(cb => cb.value);
+
+                    // Check for custom words
+                    const useCustom = document.getElementById('useCustomWords').checked;
+                    gameState.customWordContributors = [];
+                    
+                    if (useCustom) {
+                        // Collect all contributors' words from stored data
+                        Object.values(contributorData).forEach(contributor => {
+                            if (contributor.words.length > 0) {
+                                gameState.customWordContributors.push({
+                                    name: contributor.name,
+                                    words: contributor.words
+                                });
+                            }
+                        });
+                    }
+                    
+                    // Need either categories or custom words
+                    if (gameState.selectedCategories.length === 0 && gameState.customWordContributors.length === 0) {
+                        showAlert('Please select at least one category or add custom words!');
+                        startBtn.disabled = false;
+                        startBtn.textContent = originalText;
+                        return;
+                    }
+
+                    // Get players
+                    const numPlayers = parseInt(document.getElementById('numPlayers').value);
+                    gameState.players = [];
+                    for (let i = 1; i <= numPlayers; i++) {
+                        const input = document.getElementById(`player${i}`);
+                        const name = input.value.trim() || input.placeholder;
+                        gameState.players.push(name);
+                    }
+
+                    // Check for duplicate names
+                    const uniqueNames = new Set(gameState.players);
+                    if (uniqueNames.size !== gameState.players.length) {
+                        showAlert('Can\'t have 2 players with the same name! Please make each name unique.');
+                        startBtn.disabled = false;
+                        startBtn.textContent = originalText;
+                        return;
+                    }
+
+                    // Get number of imposters
+                    let baseNumImposters = parseInt(document.getElementById('numImposters').value);
+                    
+                    if (baseNumImposters >= numPlayers) {
+                        showAlert(`Cannot have ${baseNumImposters} imposters with only ${numPlayers} players. Maximum imposters: ${numPlayers - 1}`);
+                        startBtn.disabled = false;
+                        startBtn.textContent = originalText;
+                        return;
+                    }
+
+                    // Check for frenzy mode
+                    const frenzyEnabled = document.getElementById('frenzyMode').checked;
+                    gameState.frenzyMode = null;
+                    let numImposters = baseNumImposters;
+                    
+                    if (frenzyEnabled && Math.random() < FRENZY_CHANCE) {
+                        const frenzyModes = ['all_imposters', 'no_imposters', 'one_innocent'];
+                        gameState.frenzyMode = frenzyModes[Math.floor(Math.random() * frenzyModes.length)];
+                        
+                        if (gameState.frenzyMode === 'all_imposters') {
+                            numImposters = numPlayers;
+                        } else if (gameState.frenzyMode === 'no_imposters') {
+                            numImposters = 0;
+                        } else if (gameState.frenzyMode === 'one_innocent') {
+                            numImposters = numPlayers - 1;
+                        }
+                    }
+
+                    // Select random word - combine custom words with category words
+                    let allWords = [];
+                    let customWordsPool = [];
+                    let wordOwnerMap = {}; // Map words to their owners
+                    
+                    // Add words from selected categories
+                    gameState.selectedCategories.forEach(cat => {
+                        allWords = allWords.concat(categories[cat]);
+                    });
+                    
+                    // Add custom words from all contributors
+                    if (gameState.customWordContributors.length > 0) {
+                        gameState.customWordContributors.forEach(contributor => {
+                            contributor.words.forEach(word => {
+                                customWordsPool.push(word);
+                                if (contributor.name) {
+                                    wordOwnerMap[word] = contributor.name;
+                                }
+                            });
+                        });
+                        allWords = allWords.concat(customWordsPool);
+                    }
+                    
+                    // Filter out already used words
+                    let availableWords = allWords.filter(word => !gameState.usedWords.includes(word));
+                    
+                    // If all words have been used, reset the pool
+                    if (availableWords.length === 0) {
+                        gameState.usedWords = [];
+                        availableWords = allWords;
+                    }
+                    
+                    gameState.word = GameUtils.getRandomElement(availableWords);
+                    gameState.usedWords.push(gameState.word); // Mark this word as used
+                    
+                    // Check if the selected word has an owner
+                    const wordOwner = wordOwnerMap[gameState.word] || null;
+
+                    // Validate word owner matches player list if provided (case-insensitive)
+                    if (wordOwner) {
+                        const playerNamesLower = gameState.players.map(p => p.toLowerCase());
+                        if (!playerNamesLower.includes(wordOwner.toLowerCase())) {
+                            showAlert(`The name "${wordOwner}" doesn't match any player name. Please use an exact player name or leave blank.`);
+                            startBtn.disabled = false;
+                            startBtn.textContent = originalText;
+                            return;
+                        }
+                    }
+
+                    // Select random imposters (excluding word owner if applicable)
+                    let eligiblePlayers = [...gameState.players];
+                    if (wordOwner) {
+                        // Case-insensitive comparison for word owner exclusion
+                        eligiblePlayers = eligiblePlayers.filter(p => p.toLowerCase() !== wordOwner.toLowerCase());
+                    }
+                    
+                    if (eligiblePlayers.length < numImposters) {
+                        showAlert('Not enough players to assign imposters (word owner cannot be imposter)!');
+                        startBtn.disabled = false;
+                        startBtn.textContent = originalText;
+                        return;
+                    }
+                    
+                    if (numImposters === 0) {
+                        gameState.imposters = [];
+                    } else {
+                        const shuffled = GameUtils.shuffleArray(eligiblePlayers);
+                        gameState.imposters = shuffled.slice(0, numImposters);
+                    }
+
+                    gameState.baseNumImposters = baseNumImposters;
+
+                    // Select starting player (non-imposter if possible)
+                    const nonImposters = gameState.players.filter(p => !gameState.imposters.includes(p));
+                    if (nonImposters.length > 0) {
+                        gameState.startingPlayer = GameUtils.getRandomElement(nonImposters);
+                    } else {
+                        gameState.startingPlayer = GameUtils.getRandomElement(gameState.players);
+                    }
+
+                    // Start reveal sequence
+                    gameState.currentPlayerIndex = 0;
+                    showScreen('revealScreen');
+                    setupRevealScreen();
+                } finally {
+                    startBtn.disabled = false;
+                    startBtn.textContent = originalText;
+                }
+            }, 100);
+        }
+
+        function setupRevealScreen() {
+            const elements = {
+                playerName: document.getElementById('currentPlayerName'),
+                progressText: document.getElementById('progressText'),
+                progressFill: document.getElementById('progressFill'),
+                revealBtn: document.getElementById('revealBtn'),
+                wordContainer: document.getElementById('wordContainer')
+            };
+            
+            const playerName = gameState.players[gameState.currentPlayerIndex];
+            const playerNum = gameState.currentPlayerIndex + 1;
+            const totalPlayers = gameState.players.length;
+            const progressPercent = (playerNum / totalPlayers) * 100;
+            
+            elements.playerName.textContent = playerName;
+            elements.progressText.textContent = `Player ${playerNum} of ${totalPlayers}`;
+            elements.progressFill.style.width = progressPercent + '%';
+            elements.revealBtn.style.display = 'block';
+            elements.wordContainer.style.display = 'none';
+        }
+
+        function revealWord() {
+            const playerName = gameState.players[gameState.currentPlayerIndex];
+            const isImposter = gameState.imposters.includes(playerName);
+            const wordDisplay = document.getElementById('wordDisplay');
+            
+            wordDisplay.textContent = isImposter ? 'IMPOSTER' : gameState.word;
+            wordDisplay.className = 'word-display ' + (isImposter ? 'imposter' : 'normal');
+            
+            setTimeout(() => {
+                wordDisplay.classList.add('animate');
+            }, 10);
+            
+            const isLastPlayer = gameState.currentPlayerIndex === gameState.players.length - 1;
+            const nextBtn = document.getElementById('nextBtn');
+            const instruction = document.getElementById('revealInstruction');
+            
+            if (isLastPlayer) {
+                nextBtn.textContent = 'Hide & Start Game';
+                instruction.textContent = 'Memorize this - the game is about to begin!';
+            } else {
+                nextBtn.textContent = 'Hide & Next Player';
+                instruction.textContent = 'Memorize this and pass to the next player';
+            }
+            
+            document.getElementById('revealBtn').style.display = 'none';
+            document.getElementById('wordContainer').style.display = 'block';
+        }
+
+        function hideAndNext() {
+            gameState.currentPlayerIndex++;
+            
+            if (gameState.currentPlayerIndex >= gameState.players.length) {
+                document.getElementById('startingPlayerName').textContent = gameState.startingPlayer + ' starts!';
+                showScreen('readyScreen');
+            } else {
+                setupRevealScreen();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('gameWord').textContent = gameState.word;
+            
+            const title = gameState.imposters.length === 1 ? '🎭 The Imposter Was:' : '🎭 The Imposters Were:';
+            document.getElementById('impostersTitle').textContent = title;
+            
+            const impostersList = document.getElementById('impostersList');
+            impostersList.innerHTML = '';
+            
+            if (gameState.imposters.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No imposters this round!';
+                impostersList.appendChild(li);
+            } else {
+                gameState.imposters.forEach(imposter => {
+                    const li = document.createElement('li');
+                    li.textContent = imposter;
+                    impostersList.appendChild(li);
+                });
+            }
+            
+            showScreen('resultsScreen');
+        }
+
+        function nextRound() {
+            gameState.currentPlayerIndex = 0;
+            
+            // Select new word - combine custom words with category words
+            let allWords = [];
+            let customWordsPool = [];
+            let wordOwnerMap = {};
+            
+            // Add words from selected categories
+            gameState.selectedCategories.forEach(cat => {
+                allWords = allWords.concat(categories[cat]);
+            });
+            
+            // Add custom words from all contributors
+            if (gameState.customWordContributors.length > 0) {
+                gameState.customWordContributors.forEach(contributor => {
+                    contributor.words.forEach(word => {
+                        customWordsPool.push(word);
+                        if (contributor.name) {
+                            wordOwnerMap[word] = contributor.name;
+                        }
+                    });
+                });
+                allWords = allWords.concat(customWordsPool);
+            }
+            
+            // Filter out already used words
+            let availableWords = allWords.filter(word => !gameState.usedWords.includes(word));
+            
+            // If all words have been used, reset the pool
+            if (availableWords.length === 0) {
+                gameState.usedWords = [];
+                availableWords = allWords;
+            }
+            
+            gameState.word = GameUtils.getRandomElement(availableWords);
+            gameState.usedWords.push(gameState.word); // Mark this word as used
+            
+            // Check if the selected word has an owner
+            const wordOwner = wordOwnerMap[gameState.word] || null;
+            
+            // Re-roll frenzy mode
+            const frenzyEnabled = document.getElementById('frenzyMode').checked;
+            gameState.frenzyMode = null;
+            let numImposters = gameState.baseNumImposters;
+            
+            if (frenzyEnabled && Math.random() < FRENZY_CHANCE) {
+                const frenzyModes = ['all_imposters', 'no_imposters', 'one_innocent'];
+                gameState.frenzyMode = frenzyModes[Math.floor(Math.random() * frenzyModes.length)];
+                
+                if (gameState.frenzyMode === 'all_imposters') {
+                    numImposters = gameState.players.length;
+                } else if (gameState.frenzyMode === 'no_imposters') {
+                    numImposters = 0;
+                } else if (gameState.frenzyMode === 'one_innocent') {
+                    numImposters = gameState.players.length - 1;
+                }
+            }
+            
+            // Select new imposters
+            let eligiblePlayers = [...gameState.players];
+            if (wordOwner) {
+                // Case-insensitive comparison for word owner exclusion
+                eligiblePlayers = eligiblePlayers.filter(p => p.toLowerCase() !== wordOwner.toLowerCase());
+            }
+            
+            if (numImposters === 0) {
+                gameState.imposters = [];
+            } else {
+                const shuffled = GameUtils.shuffleArray(eligiblePlayers);
+                gameState.imposters = shuffled.slice(0, numImposters);
+            }
+            
+            // Select new starting player
+            const nonImposters = gameState.players.filter(p => !gameState.imposters.includes(p));
+            if (nonImposters.length > 0) {
+                gameState.startingPlayer = GameUtils.getRandomElement(nonImposters);
+            } else {
+                gameState.startingPlayer = GameUtils.getRandomElement(gameState.players);
+            }
+            
+            showScreen('revealScreen');
+            setupRevealScreen();
+        }
+
+        function showForgotWordModal() {
+            const modal = document.getElementById('forgotWordModal');
+            const playerList = document.getElementById('playerSelectList');
+            const wordDisplay = document.getElementById('forgotWordDisplay');
+            const cancelBtn = document.getElementById('forgotWordCancelBtn');
+            
+            // Reset modal state
+            playerList.innerHTML = '';
+            playerList.style.display = 'flex';
+            wordDisplay.style.display = 'none';
+            cancelBtn.style.display = 'block';
+            
+            // Create button for each player
+            gameState.players.forEach(playerName => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary';
+                btn.textContent = playerName;
+                btn.style.marginTop = '0';
+                btn.onclick = () => showPlayerWord(playerName);
+                playerList.appendChild(btn);
+            });
+            
+            modal.style.display = 'flex';
+        }
+
+        function showPlayerWord(playerName) {
+            const isImposter = gameState.imposters.includes(playerName);
+            const wordText = document.getElementById('forgotWordText');
+            const playerList = document.getElementById('playerSelectList');
+            const wordDisplay = document.getElementById('forgotWordDisplay');
+            const cancelBtn = document.getElementById('forgotWordCancelBtn');
+            
+            wordText.textContent = isImposter ? 'IMPOSTER' : gameState.word;
+            wordText.className = 'word-display ' + (isImposter ? 'imposter' : 'normal');
+            
+            // Remove old animation class if it exists
+            wordText.classList.remove('animate');
+            
+            // Add animation
+            setTimeout(() => {
+                wordText.classList.add('animate');
+            }, 10);
+            
+            // Hide player list, show word
+            playerList.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            wordDisplay.style.display = 'block';
+        }
+
+        function closeForgotWordModal() {
+            const modal = document.getElementById('forgotWordModal');
+            const playerList = document.getElementById('playerSelectList');
+            const wordDisplay = document.getElementById('forgotWordDisplay');
+            const cancelBtn = document.getElementById('forgotWordCancelBtn');
+            const wordText = document.getElementById('forgotWordText');
+            
+            // Reset everything to initial state
+            modal.style.display = 'none';
+            playerList.style.display = 'flex';
+            wordDisplay.style.display = 'none';
+            cancelBtn.style.display = 'block';
+            wordText.classList.remove('animate');
+        }
+
+        function newGame() {
+            showScreen('setupScreen');
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
